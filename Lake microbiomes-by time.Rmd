@@ -1,0 +1,41 @@
+---
+title: "Lake Microbiomes Through Time"
+author: "C Wall"
+date: "5/17/2022"
+output:
+  html_document:
+    code_folding: hide
+    toc: yes
+    toc_depth: 4
+    toc_float: yes
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r global options, results="hide", warning=FALSE, message=FALSE}
+if (!require('knitr')) install.packages('knitr'); library('knitr')
+knitr::opts_chunk$set(warning=FALSE, message=FALSE, fig.align='center')
+
+# load packages
+if (!require("pacman")) install.packages("pacman") # for rapid install if not in library
+
+devtools::install_github("benjjneb/dada2", ref="v1.20") # update to most recent dada2
+
+# use pacman to load CRAN packages missing
+pacman::p_load('knitr', 'tidyverse', 'knitr', 'magrittr', 'effects', 'devtools',
+               'stringi', 'dplyr', "ggplot2", "gridExtra", "dada2", "phyloseq", "vegan", "cowplot",
+               "decontam")
+
+
+#upload Bioconductor (now BiocManager or R v. > 3.5.0 ), can specify different version in last line
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install(version = "3.10")
+
+
+#install specific BiocManager packages
+BiocManager::install(c(
+    "Decipher", "phangorn", "phyloseq"
+  ), update = TRUE, ask = FALSE)
+
+```
