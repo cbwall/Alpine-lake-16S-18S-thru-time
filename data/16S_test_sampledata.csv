@@ -1,0 +1,25 @@
+﻿Core.Lab.Sample.Name,Tube.ID.number,SampleID,species,processing,number.of.individuals,location,extraction.kit,volume
+C.PCRBlank1,blank1,PCRBlank1_S5,blank,NA,NA,NA,MagMax,10ul
+C.PCRBlank2,blank2,PCRBlank2_S6,blank,NA,NA,NA,MagMax,10ul
+C.PCRBlank3,blank3,PCRBlank3_S7,blank,NA,NA,NA,MagMax,10ul
+C.PCRBlank4,blank4,PCRBlank4_S8,blank,NA,NA,NA,MagMax,10ul
+C.ZymoPCR0.01,PCR0.01,ZymoPCR0_01,mock,NA,NA,NA,MagMax,10ul
+C.ZymoPCR0.1,PCR0.1,ZymoPCR0_1,mock,NA,NA,NA,MagMax,10ul
+C.ZymoPCR1,PCR1,ZymoPCR1_S2,mock,NA,NA,NA,MagMax,10ul
+C.ZymoPCR10,PCR10,ZymoPCR10_S1,mock,NA,NA,NA,MagMax,10ul
+S.1,1,1_S271,Daphnia,whole organism,10,Gardisky,Qiagen,10ul
+S.10,10,10_S279,Daphnia,dissected gut,10,Miramar,Qiagen,10ul
+S.12,12,12_S280,Daphnia,dissected gut,30,Miramar,Qiagen,10ul
+S.13,13,13_S281,Daphnia,whole organism,10,Miramar,MagMax,10ul
+S.14,14,14_S282,Daphnia,whole organism,30,Miramar,MagMax,10ul
+S.15,15,15_S283,Daphnia,dissected gut,10,Miramar,MagMax,10ul
+S.16,16,16_S284,Daphnia,dissected gut,30,Miramar,MagMax,10ul
+S.17,17,17_S285,Calanoid copepod,whole organism,10,Greenstone Lake,MagMax,10ul
+S.18,18,18_S286,Calanoid copepod,whole organism,30,Greenstone Lake,MagMax,10ul
+S.2,2,2_S272,Daphnia,whole organism,25,Gardisky,Qiagen,10ul
+S.3,3,3_S273,Daphnia,whole organism,50,Gardisky,Qiagen,10ul
+S.4,4,4_S274,Calanoid copepod,whole organism,10,Convict Lake,Qiagen,10ul
+S.5,5,5_S275,Daphnia,whole organism,65,Gardisky,Qiagen,10ul
+S.6,6,6_S276,Calanoid copepod,whole organism,48,Convict Lake,Qiagen,10ul
+S.7,7,7_S277,Daphnia,whole organism,10,Miramar,Qiagen,10ul
+S.9,9,9_S278,Daphnia,whole organism,30,Miramar,Qiagen,10ul
