@@ -269,7 +269,7 @@ richness.test<-cbind(run.metaD, rich$Observed)
 plot_richness(ps, x="location", measures=c("Observed", "Shannon"))
 
 ##### re-inspect reads here
-
+ 
 ################# 
 ################# 
 ################# Note!!! the controls are marked based on 'control vs. samples' but some are +controls
