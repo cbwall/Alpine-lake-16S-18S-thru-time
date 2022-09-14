@@ -1,0 +1,64 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2513
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs26 \cf0 FIGARO\
+https://github.com/Zymo-Research/figaro#figaro\
+\
+###### command line version\
+\
+The user must provide the total length of their amplicon as well as a folder containing  untrimmed  paired-end  read  data  in  FASTQ  format.    Optional  inputs  include  specifying the name of the output file, specifying input and output directories, subsampling rate  for  the  FASTQ  files,  minimum  overlap  between  the  paired-end  reads,  and  the  expected error percentile to use in filtering at each tested position\
+\
+\
+\
+\
+### Clone the FIGARO repository\
+# move to wherever you want this to go in your cd\
+$ git clone https://github.com/Zymo-Research/figaro.git\
+\
+### Descend into the directory containing FIGARO\
+$ cd figaro\
+\
+### make a folder for output in the figaro folder,\
+\
+\
+### Install Python packages, need \'93--user" to get around permissions issue\
+$ pip3 install -r requirements.txt --user\
+\
+## update pip\
+pip3 install --upgrade pip --user \
+\
+### FIGARO will analyze an entire directory of FASTQ files on the system. Run the following command from FIGARO's directory:\
+\
+# here the \'91fastq directory\'92 would be\'85.\
+# /Desktop/Research and Teaching/github/Alpine-lake-16S-18S-thru-time/data/16S_Yos_data\
+# path to \'91output files\'92 would be\'85\
+# /Desktop/Research and Teaching/github/Alpine-lake-16S-18S-thru-time/output\
+# \'91a\'92 is amplicon length\
+# \'91f\'92 is forward primer length\
+# \'91r\'92 is reverse primer length\
+# \'91m\'92 is minimum overlap (Dada2 suggests 20)\
+# \'91p\'92 is percentile to target for read filtering\
+\
+$ python3 figaro.py  -i /path/to/fastq/directory  -o /path/to/output/files  -a 291 -f 19 -r 20\
+\
+$ python3 ~/figaro/figaro/figaro.py  -i ~/figaro/figaro/16S_Yos_data -o ~chriswall/figaro/figaro.output  -a 291 -f 19 -r 20 -m 20\
+\
+### weird notes: figaro added to the user directory unless you specify a different location. This is the GitHub directory, but it actually has another file within it named figaro where the figaro.py script it (terrible architecture\'85). Put the 16S files  (not trimmed) into a directory. Place outputs in folder named \'93output\'94 or whatever\
+\
+## modified the script to have it run out of GitHub folder\
+# put files in the GitHub data folder o my device\
+# renamed the original \'91figaro\'92 as \'91figaro.git\'92 to make more clear\
+# made output folder \'91figaro.output\'92 in the \'91figaro.git\'92 folder. \
+# note that you have to make the figaro input the COMPLETE directory from the user up\
+# but the output seems to be able to run from current wd\
+\
+# example of code:\
+\
+$ python3 ~/Desktop/Research\\ and\\ Teaching/github/Alpine-lake-16S-18S-thru-time/data/figaro.git/figaro/figaro.py  -i ~/Desktop/Research\\ and\\ Teaching/github/Alpine-lake-16S-18S-thru-time/data/16S_Yos_data -o ~/figaro.git/figaro.output  -a 291 -f 19 -r 20 -m 20 \
+\
+\
+## with the }
