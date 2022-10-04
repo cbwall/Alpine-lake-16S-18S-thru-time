@@ -19,23 +19,382 @@ knitr::opts_chunk$set(warning=FALSE, message=FALSE, fig.align='center')
 # load packages
 if (!require("pacman")) install.packages("pacman") # for rapid install if not in library
 
-devtools::install_github("benjjneb/dada2", ref="v1.20") # update to most recent dada2
-
 # use pacman to load CRAN packages missing
 pacman::p_load('knitr', 'tidyverse', 'knitr', 'magrittr', 'effects', 'devtools',
                'stringi', 'dplyr', "ggplot2", "gridExtra", "dada2", "phyloseq", "vegan", "cowplot",
-               "decontam")
+               "decontam","BiocManager", "dada2")
+
+devtools::install_github("benjjneb/dada2", ref="v1.20") # update to most recent dada2
 
 
 #upload Bioconductor (now BiocManager or R v. > 3.5.0 ), can specify different version in last line
-if (!require("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-BiocManager::install(version = "3.10")
-
+# if (!require("BiocManager", quietly = TRUE))
+# install.packages("BiocManager")
 
 #install specific BiocManager packages
-BiocManager::install(c(
-    "Decipher", "phangorn", "phyloseq"
-  ), update = TRUE, ask = FALSE)
+# BiocManager::install(c( "Decipher", "phangorn", "phyloseq"), update = TRUE, ask = FALSE)
+```
+
+add in and edit metadata
+```{r edit metadata}
+
+# edit metadata
+md<-read.csv("data/metadata/lake_eDNA.csv")
+md$year <- sapply(strsplit(md$sample_year_extract_ID, "_"), `[`, 1) # extract sample names to YEARS
+md$sample.ID <- sapply(strsplit(md$sample_year_extract_ID, "_"), `[`, 2) # extract sample names to YEARS
+
+# these are extraction controls
+md$year[md$year=='sierra']<- NA
+md$year[md$year=='colombia']<- NA
+
+# make a column for location
+md$location <- md$sample_type
+md$location[md$location=='blank' | 
+                 md$location=='pcr_pos' | 
+                 md$location=='pcr_neg' | 
+                 md$location=='ext.blank'] <- "NA"
+
+# change sample type to reflect eDNA or controls
+md$sample_type[md$sample_type=='colombia' | md$sample_type=='sierra']<- "eDNA"
+
+# made a sample or control factor
+md$sample_control<- md$sample_type
+md$sample_control[md$sample_control=='eDNA']<- "samples"
+
+md$sample_control[md$sample_control=='blank' | 
+                 md$sample_control=='pcr_pos' | 
+                 md$sample_control=='pcr_neg' | 
+                 md$sample_control=='ext.blank'] <- "controls"
+
+# rearrange
+run.metaD<- md %>% 
+  dplyr::select(submission_sample_ID, sample_year_extract_ID, gene, year, location, site, 
+                sample_type, sample_number, sample_control)
+
+# export clean metadata
+write.csv(run.metaD, "data/metadata/run.metaD.csv")
+#write.csv(run.metaD[c(1:10),], "data/metadata/16Stest.run.metaD.csv")
+
+############################################
+############################################
+
 
 ```
+
+filter the trimmed (cut-adapt processed) FASTQ files
+```{r filter and trim}
+# read in the names of the fastq files
+# perform some string manipulation to get lists of the forward and reverse fastq in matched order:
+
+
+# load in the cut-adapt samples in the "trimmed" folder
+miseq_path<-"data/16S_Yos_data/trimmed" # CHANGE to the directory containing the fastq files after unzipping.
+list.files(miseq_path)
+
+## Filter and Trim
+### remove low quality reads, trim to consistent length
+
+# Sort ensures forward/reverse reads are in same order
+fnFs <- sort(list.files(miseq_path, pattern="_R1_trimmed.fastq"))
+fnRs <- sort(list.files(miseq_path, pattern="_R2_trimmed.fastq"))
+
+
+# Extract sample names, assuming filenames have format: SAMPLENAME_XXX.fastq
+sampleNames.p2 <- sapply(strsplit(fnFs, "_"), `[`, 2) # extract sample names
+sampleNames.p3 <- sapply(strsplit(fnFs, "_"), `[`, 3) # extract the run # sample
+sampleNames<-paste(sampleNames.p2,sampleNames.p3) # compile
+sampleNames<-gsub(" ", "_", sampleNames) # remove space and add an underscore
+
+#### add this SampleNames to the metadata file
+run.metaD$sampleNames<-sampleNames
+
+# Specify the full path to the fnFs and fnRs
+fnFs <- file.path(miseq_path, fnFs)
+fnRs <- file.path(miseq_path, fnRs)
+fnFs[1:3]
+```
+
+nspect qualit plot scores. Can then truncate based on quality for reads. The truncating value does not have to be same for F and R.
+```{r filter and trim}
+# quality score plot for forward reads
+plotQualityProfile(fnFs[c(1,10)])
+
+# quality score plot for reverse reads
+plotQualityProfile(fnRs[c(2,8)])
+
+# We define the filenames for the filtered fastq.gz files:
+
+filt_path <- file.path(miseq_path, "filtered") # Place filtered files in filtered/ subdirectory
+if(!file_test("-d", filt_path)) dir.create(filt_path)
+
+filtFs <- file.path(filt_path, paste0(sampleNames, "_F_trimfilt.fastq.gz"))
+filtRs <- file.path(filt_path, paste0(sampleNames, "_R_trimfilt.fastq.gz"))
+
+# Trimming and filtering is performed on paired reads jointly, i.e. both reads must pass the filter for the pair to pass.
+
+#### --- if not useing cut-adapt, Figaro is a nice option 
+# must use raw fastq files. Here, Figaro recommends a 192/158 trim for max retension (84%)
+# will trim primer for forward (19) and reverse (20)
+# Run Figaro to get estiamtes of what the truncLen should be (called Trim Position)
+# removing the trimleft since primers removed, also Figaro can't run with trimmed data so forego.
+#### ---
+
+
+# We combine these trimming parameters with standard filtering parameters, the most important being the enforcement of a maximum of **2 expected errors per-read** 
+
+out <- filterAndTrim(fnFs, filtFs, fnRs, filtRs, truncLen=c(215,200), #trimLeft=c(19,20),
+                     maxN=0, maxEE=c(2,2), truncQ=2, rm.phix=TRUE,
+                     compress=TRUE, multithread=TRUE) # On Windows set multithread=FALSE
+head(out)
+
+saveRDS(out, file="output/out.trim.rds")
+```
+
+###Infer sequence variants
+After filtering, use high-resolution DADA2 method to to infer amplicon sequence variants (ASVs) exactly, without imposing any arbitrary threshhold 
+
+In order to verify that the error rates have been reasonably well-estimated, we inspect the fit between the observed error rates (black points) and the fitted error rates (black lines) in Figure 1. These figures show the frequencies of each type of transition as a function of the quality.
+
+```{r error rates}
+### estimate the error rates
+errF <- learnErrors(filtFs, multithread=TRUE)
+saveRDS(errF, file="output/errF.rds")
+
+errR <- learnErrors(filtRs, multithread=TRUE)
+saveRDS(errR, file="output/errR.rds")
+
+
+# plot error rates
+plotErrors(errF, nominalQ=TRUE)
+plotErrors(errR, nominalQ=TRUE)
+```
+
+Dereplication combines all identical sequencing reads into into “unique sequences” with a corresponding “abundance”: the number of reads with that unique sequence. Dereplication substantially reduces computation time by eliminating redundant comparisons.
+```{r, dereplicate}
+### Derep
+derepFs <- derepFastq(filtFs, verbose=TRUE)
+saveRDS(derepFs, file="output/derepFs.rds")
+
+derepRs <- derepFastq(filtRs, verbose=TRUE)
+saveRDS(derepRs, file="output/derepRs.rds")
+
+# Name the derep-class objects by the sample names
+names(derepFs) <- sampleNames
+names(derepRs) <- sampleNames
+```
+
+The DADA2 method relies on a parameterized model of substitution errors to distinguish sequencing errors from real biological variation
+```{r e}
+#The DADA2 sequence inference method can run in two different modes:
+#####
+dadaFs <-dada(derepFs, err=errF, multithread=2)
+saveRDS(dadaFs, file="output/dadaFs.rds")
+
+dadaRs <-dada(derepRs, err=errF, multithread=2)
+saveRDS(dadaRs,file="output/dadaRs.rds")
+
+# inspect data
+dadaFs[[1]]
+```
+
+Construct sequence table and remove chimeras
+```{r sequence table}
+# The DADA2 method produces a sequence table that is a higher-resolution analogue of the common “OTU table”, i.e. a sample by sequence feature table valued by the number of times each sequence was observed in each sample.
+
+# get sequences
+head(getSequences(dadaFs[[2]]))
+
+# merge
+mergers <- mergePairs(dadaFs, derepFs, dadaRs, derepRs)
+seqtab <- makeSequenceTable(mergers[!grepl("Mock", names(mergers))])
+table(nchar(getSequences(seqtab)))
+
+### save data
+saveRDS(mergers, file="output/mergers.rds")
+saveRDS(seqtab, file="output/seqtab.rds")
+```
+
+Chimeras have not yet been removed. The error model in the sequence inference algorithm does not include a chimera component, and therefore we expect this sequence table to include many chimeric sequences. We now remove chimeric sequences by comparing each inferred sequence to the others in the table, and removing those that can be reproduced by stitching together two more abundant sequences.
+
+```{r remove chimera}
+# remove chimera
+seqtab.nochim <-removeBimeraDenovo(seqtab, method="consensus", multithread=2, verbose=TRUE)
+saveRDS(seqtab.nochim,file="output/seqtab.nochim.rds")
+
+# Set multithread=TRUE to use all cores
+sum(seqtab.nochim)/sum(seqtab) # 99% of samples kept
+
+getN <-function(x)sum(getUniques(x))
+track <-cbind(out,sapply(dadaFs, getN), 
+              sapply(dadaRs, getN), sapply(mergers, getN),rowSums(seqtab.nochim))
+colnames(track) <-c("input", "filtered", "denoisedF", "denoisedR", "merged", "nonchim")
+rownames(track) <- sampleNames
+head(track)
+```
+
+Assign taxonomy using the SILVA database for 16S
+```{r assign taxonomy}
+# assign taxonomy
+fastaRef <- "data/silva_nr99_v138.1_wSpecies_train_set.fa.gz"
+taxTab <- assignTaxonomy(seqtab.nochim, refFasta = fastaRef, multithread=TRUE)
+saveRDS(taxTab, file="output/taxTab.rds")
+
+unname(head(taxTab))
+```
+
+
+```{r load back in data}
+###### load back data if R collapsed
+out<- readRDS("output/out.trim.rds")
+errF<- readRDS("output/errF.rds")
+errR<- readRDS("output/errR.rds")
+derepFs<- readRDS("output/derepFs.rds")
+derepRs<- readRDS("output/derepRs.rds")
+dadaFs<- readRDS("output/dadaFs.rds")
+dadaRs<- readRDS("output/dadaRs.rds")
+mergers<- readRDS("output/mergers.rds")
+seqtab<- readRDS("output/seqtab.rds")
+seqtab.nochim<- readRDS("output/seqtab.nochim.rds")
+taxTab<- readRDS("output/taxTab.rds")
+######
+```
+
+Combine data into a phyloseq object.  
+The package phyloseq organizes and synthesizes the different data types from a typical amplicon sequencing experiment into a single data object that can be easily manipulated
+```{r load back in data}
+## sample data
+# metadata is run.metaD
+all(rownames(seqtab.nochim) %in% run.metaD$sampleNames)
+
+rownames(run.metaD) <- run.metaD$sampleNames
+
+ps <-phyloseq(otu_table(seqtab.nochim, taxa_are_rows=FALSE),
+              sample_data(run.metaD), 
+              tax_table(taxTab))
+              
+ps
+
+# save and reload ps object
+saveRDS(ps, file="output/ps.rds")
+ps<- readRDS("output/ps.rds")
+
+#11,870 taxa in 191 samples
+```
+
+```{r inspect data}
+## let's inspect
+df <- as.data.frame(sample_data(ps)) # Put sample_data into a ggplot-friendly data.frame
+df$LibrarySize <- sample_sums(ps) # this is the # of reads
+df <- df[order(df$LibrarySize),]
+df$Index <- seq(nrow(df))
+
+
+########### plot the inspected figures
+# figure formatting conditions
+Fig.formatting<-(theme_classic()) +
+  theme(text=element_text(size=10),
+        axis.line=element_blank(),
+        legend.text.align = 0,
+        legend.text=element_text(size=10),
+        #legend.title = element_blank(),
+        panel.border = element_rect(fill=NA, colour = "black", size=1),
+        aspect.ratio=1, 
+        axis.ticks.length=unit(0.25, "cm"),
+        axis.text.y=element_text(
+          margin=unit(c(0.5, 0.5, 0.5, 0.5), "cm"), colour="black", size=10), 
+        axis.text.x=element_text(
+          margin=unit(c(0.5, 0.5, 0.5, 0.5), "cm"), colour="black", size=8)) +
+  theme(legend.key.size = unit(0.4, "cm")) +
+  theme(aspect.ratio=1.3) +
+  theme(panel.spacing=unit(c(0, 0, 0, 0), "cm"))
+
+#####
+plot.inspect.reads.type<-ggplot(data=df, aes(x=Index, y=LibrarySize, color=location)) + 
+  geom_point()+
+  scale_color_manual(name="Sample Type", values = c("darkgoldenrod1", "cornflowerblue", "gray70")) +
+  xlab("Sample Index") + ylab("Library Size") +
+  ylim(0, 40000) +
+  Fig.formatting
+plot.inspect.reads.type
+
+# Show available ranks in the dataset
+rank_names(ps)
+
+table(tax_table(ps)[, "Phylum"], exclude = NULL)
+table(tax_table(ps)[, "Kingdom"], exclude = NULL)
+
+#remove NAs
+ps <- subset_taxa(ps, !is.na(Phylum) & !Phylum %in% c("", "uncharacterized"))
+ps <- subset_taxa(ps, !is.na(Phylum) & !Phylum %in% c("", "Chloroplast"))
+
+# re-examine table, NAs gone
+table(tax_table(ps)[, "Phylum"], exclude = NULL)
+
+
+# Compute prevalence of each feature, store as data.frame
+prevdf = apply(X = otu_table(ps),
+               MARGIN = ifelse(taxa_are_rows(ps), yes = 1, no = 2),
+               FUN = function(x){sum(x > 0)})
+
+# Add taxonomy and total read counts to this data.frame
+prevdf = data.frame(Prevalence = prevdf,
+                    TotalAbundance = taxa_sums(ps),
+                    tax_table(ps))
+
+plyr::ddply(prevdf, "Phylum", function(df1){cbind(mean(df1$Prevalence),sum(df1$Prevalence))})
+
+#########
+
+# inspect # of reads
+sort(rowSums(otu_table(ps))) #reads
+rich<-estimate_richness(ps, split = TRUE, measures = NULL)
+richness.test<-cbind(run.metaD, rich$Observed)
+
+# plot it
+plot_richness(ps, x="location", measures=c("Observed", "Shannon"))
+
+##### re-inspect reads here
+ 
+################# 
+################# 
+################# Note!!! the controls are marked based on 'control vs. samples' but some are +controls
+################# Need at address this above so that + aren't penalizing us
+```
+
+ID contaminants
+```{r ID contaminants}
+## ID contaminants
+ps <- prune_taxa(taxa_sums(ps) > 1, ps) # first let's prune those not in at least 1 sample
+ps <- prune_samples(sample_sums(ps) > 100, ps) # remove samples with < 100 reads
+ps
+# not 6176 taxa remain, 182 samples (9 samples removed)
+
+
+sample_data(ps)$is.neg <- sample_data(ps)$sample_control == "controls"
+contamdf.prev <- isContaminant(ps, method="prevalence", neg="is.neg")
+
+table(contamdf.prev$contaminant) # which are contaminants? 190, 5986 not
+head(which(contamdf.prev$contaminant))
+```
+
+remove contaminants
+```{r remove contaminants}
+### remove contaminants
+ps.noncontam <- prune_taxa(!contamdf.prev$contaminant, ps)
+ps.noncontam # 5986 remain
+
+rich<-estimate_richness(ps.noncontam, split = TRUE, measures = NULL)
+plot_richness(ps.noncontam, x="year", measures=c("Observed", "Shannon")) + theme_bw()
+rarecurve(otu_table(ps.noncontam), step=50, cex=0.5, label=FALSE)
+
+
+############# rarefy without replacement
+ps.rare = rarefy_even_depth(ps.noncontam, rngseed=1, 
+                             sample.size=0.9*min(sample_sums(ps.noncontam)), replace=F)
+
+sort(rowSums(otu_table(ps.rare))) # rarify at 13,568 reads
+
+plot_richness(ps.rare, x="sampleNames", measures=c("Observed", "Shannon")) + theme_bw()
+rarecurve(otu_table(ps.noncontam), step=50, cex=0.5, label=FALSE)
+```
+
