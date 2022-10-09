@@ -21,8 +21,8 @@ if (!require("pacman")) install.packages("pacman") # for rapid install if not in
 
 # use pacman to load CRAN packages missing
 pacman::p_load('knitr', 'tidyverse', 'knitr', 'magrittr', 'effects', 'devtools',
-               'stringi', 'dplyr', "ggplot2", "gridExtra", "dada2", "phyloseq", "vegan", "cowplot",
-               "decontam","BiocManager", "dada2")
+               'stringi', 'dplyr', "ggplot2", "gridExtra", "dada2", "phyloseq", "vegan",
+               "cowplot", "decontam","BiocManager", "dada2")
 
 devtools::install_github("benjjneb/dada2", ref="v1.20") # update to most recent dada2
 
@@ -114,15 +114,20 @@ fnRs <- file.path(miseq_path, fnRs)
 fnFs[1:3]
 ```
 
-nspect qualit plot scores. Can then truncate based on quality for reads. The truncating value does not have to be same for F and R.
+Inspect quality plot scores. Can then truncate based on quality for reads. The truncating value does not have to be same for F and R.
 ```{r filter and trim}
 # quality score plot for forward reads
 plotQualityProfile(fnFs[c(1,10)])
 
 # quality score plot for reverse reads
 plotQualityProfile(fnRs[c(2,8)])
+```
 
+
+```{r export}
 # We define the filenames for the filtered fastq.gz files:
+
+# Trimming and filtering is performed on paired reads jointly, i.e. both reads must pass the filter for the pair to pass.
 
 filt_path <- file.path(miseq_path, "filtered") # Place filtered files in filtered/ subdirectory
 if(!file_test("-d", filt_path)) dir.create(filt_path)
@@ -130,7 +135,6 @@ if(!file_test("-d", filt_path)) dir.create(filt_path)
 filtFs <- file.path(filt_path, paste0(sampleNames, "_F_trimfilt.fastq.gz"))
 filtRs <- file.path(filt_path, paste0(sampleNames, "_R_trimfilt.fastq.gz"))
 
-# Trimming and filtering is performed on paired reads jointly, i.e. both reads must pass the filter for the pair to pass.
 
 #### --- if not useing cut-adapt, Figaro is a nice option 
 # must use raw fastq files. Here, Figaro recommends a 192/158 trim for max retension (84%)
@@ -147,7 +151,7 @@ out <- filterAndTrim(fnFs, filtFs, fnRs, filtRs, truncLen=c(215,200), #trimLeft=
                      compress=TRUE, multithread=TRUE) # On Windows set multithread=FALSE
 head(out)
 
-saveRDS(out, file="output/out.trim.rds")
+write.csv(out, file="output/out.trim.csv")
 ```
 
 ###Infer sequence variants
@@ -184,7 +188,7 @@ names(derepRs) <- sampleNames
 ```
 
 The DADA2 method relies on a parameterized model of substitution errors to distinguish sequencing errors from real biological variation
-```{r e}
+```{r infer variants}
 #The DADA2 sequence inference method can run in two different modes:
 #####
 dadaFs <-dada(derepFs, err=errF, multithread=2)
@@ -218,7 +222,7 @@ Chimeras have not yet been removed. The error model in the sequence inference al
 
 ```{r remove chimera}
 # remove chimera
-seqtab.nochim <-removeBimeraDenovo(seqtab, method="consensus", multithread=2, verbose=TRUE)
+seqtab.nochim <-removeBimeraDenovo(seqtab, method="consensus", multithread=TRUE, verbose=TRUE)
 saveRDS(seqtab.nochim,file="output/seqtab.nochim.rds")
 
 # Set multithread=TRUE to use all cores
@@ -233,14 +237,25 @@ head(track)
 ```
 
 Assign taxonomy using the SILVA database for 16S
-```{r assign taxonomy}
-# assign taxonomy
-fastaRef <- "data/silva_nr99_v138.1_wSpecies_train_set.fa.gz"
-taxTab <- assignTaxonomy(seqtab.nochim, refFasta = fastaRef, multithread=TRUE)
-saveRDS(taxTab, file="output/taxTab.rds")
+```{r taxonomic assignment}
+taxa <- assignTaxonomy(seqtab.nochim, "data/silva/silva_nr99_v138.1_train_set.fa.gz", multithread=TRUE)
 
-unname(head(taxTab))
+# may need to set R environmnet memory load here: 
+# https://stackoverflow.com/questions/51248293/error-vector-memory-exhausted-limit-reached-r-3-5-0-macos
+
+# to add in Species for 16S
+taxa <- addSpecies(taxa, "data/silva/silva_species_assignment_v138.1.fa.gz")
+
+# inspect taxonomic assignment
+taxa.print <- taxa # Removing sequence rownames for display only
+rownames(taxa.print) <- NULL
+head(taxa.print)
+
+# let's save this as .RData since it is so time consuming!
+saveRDS(taxa, file="output/taxaTable.rds")
+taxa<- readRDS("output/taxaTable.rds")
 ```
+
 
 
 ```{r load back in data}
@@ -255,7 +270,6 @@ dadaRs<- readRDS("output/dadaRs.rds")
 mergers<- readRDS("output/mergers.rds")
 seqtab<- readRDS("output/seqtab.rds")
 seqtab.nochim<- readRDS("output/seqtab.nochim.rds")
-taxTab<- readRDS("output/taxTab.rds")
 ######
 ```
 
@@ -270,7 +284,7 @@ rownames(run.metaD) <- run.metaD$sampleNames
 
 ps <-phyloseq(otu_table(seqtab.nochim, taxa_are_rows=FALSE),
               sample_data(run.metaD), 
-              tax_table(taxTab))
+              tax_table(taxa))
               
 ps
 
@@ -351,7 +365,7 @@ rich<-estimate_richness(ps, split = TRUE, measures = NULL)
 richness.test<-cbind(run.metaD, rich$Observed)
 
 # plot it
-plot_richness(ps, x="location", measures=c("Observed", "Shannon"))
+plot_richness(ps, x="year", measures=c("Observed", "Shannon"))
 
 ##### re-inspect reads here
  
@@ -367,7 +381,7 @@ ID contaminants
 ps <- prune_taxa(taxa_sums(ps) > 1, ps) # first let's prune those not in at least 1 sample
 ps <- prune_samples(sample_sums(ps) > 100, ps) # remove samples with < 100 reads
 ps
-# not 6176 taxa remain, 182 samples (9 samples removed)
+# not 8536 taxa remain, 182 samples (9 samples removed)
 
 
 sample_data(ps)$is.neg <- sample_data(ps)$sample_control == "controls"
