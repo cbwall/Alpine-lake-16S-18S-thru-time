@@ -61,14 +61,26 @@ md$sample_type[md$sample_type=='colombia' | md$sample_type=='sierra']<- "eDNA"
 md$sample_control<- md$sample_type
 md$sample_control[md$sample_control=='eDNA']<- "samples"
 
-md$sample_control[md$sample_control=='blank' | 
-                 md$sample_control=='pcr_pos' | 
+# ID the - controls
+md$sample_control[md$sample_control=='blank' |
                  md$sample_control=='pcr_neg' | 
-                 md$sample_control=='ext.blank'] <- "controls"
+                 md$sample_control=='ext.blank'] <- "neg.controls"
+
+# ID the + controls
+md$sample_control[md$sample_control=='pcr_pos'] <- "pos.controls"
+
+#### add this SampleNames to the metadata file
+S1<-sapply(strsplit(md$submission_sample_ID, "_"), `[`, 2)
+S2<-sapply(strsplit(md$submission_sample_ID, "_"), `[`, 3)
+S.name<-sampleNames<-paste(S1,S2)
+sampleNames<-gsub(" ", "_", S.name) # remove space and add an underscore
+
+md$sampleNames<-(sampleNames)
 
 # rearrange
 run.metaD<- md %>% 
-  dplyr::select(submission_sample_ID, sample_year_extract_ID, gene, year, location, site, 
+  dplyr::select(submission_sample_ID, sample_year_extract_ID, gene, sampleNames,
+                year, location, site, 
                 sample_type, sample_number, sample_control)
 
 # export clean metadata
@@ -98,15 +110,15 @@ list.files(miseq_path)
 fnFs <- sort(list.files(miseq_path, pattern="_R1_trimmed.fastq"))
 fnRs <- sort(list.files(miseq_path, pattern="_R2_trimmed.fastq"))
 
-
+##### ##### ##### ##### 
+##### had issue here, the way #s reading in not in order with metadata sheet...
 # Extract sample names, assuming filenames have format: SAMPLENAME_XXX.fastq
 sampleNames.p2 <- sapply(strsplit(fnFs, "_"), `[`, 2) # extract sample names
 sampleNames.p3 <- sapply(strsplit(fnFs, "_"), `[`, 3) # extract the run # sample
 sampleNames<-paste(sampleNames.p2,sampleNames.p3) # compile
 sampleNames<-gsub(" ", "_", sampleNames) # remove space and add an underscore
+##### ##### ##### ##### ##### 
 
-#### add this SampleNames to the metadata file
-run.metaD$sampleNames<-sampleNames
 
 # Specify the full path to the fnFs and fnRs
 fnFs <- file.path(miseq_path, fnFs)
@@ -253,9 +265,7 @@ head(taxa.print)
 
 # let's save this as .RData since it is so time consuming!
 saveRDS(taxa, file="output/taxaTable.rds")
-taxa<- readRDS("output/taxaTable.rds")
 ```
-
 
 
 ```{r load back in data}
@@ -275,7 +285,10 @@ seqtab.nochim<- readRDS("output/seqtab.nochim.rds")
 
 Combine data into a phyloseq object.  
 The package phyloseq organizes and synthesizes the different data types from a typical amplicon sequencing experiment into a single data object that can be easily manipulated
-```{r load back in data}
+```{r load back in taxa table}
+taxa<- readRDS("output/taxaTable.rds")
+run.metaD<-read.csv("data/metadata/run.metaD.csv")
+
 ## sample data
 # metadata is run.metaD
 all(rownames(seqtab.nochim) %in% run.metaD$sampleNames)
@@ -286,21 +299,165 @@ ps <-phyloseq(otu_table(seqtab.nochim, taxa_are_rows=FALSE),
               sample_data(run.metaD), 
               tax_table(taxa))
               
-ps
+
+# make a string of DNA names and add to phyloseq
+dna <- Biostrings::DNAStringSet(taxa_names(ps))
+names(dna) <- taxa_names(ps)
+ps <- merge_phyloseq(ps, dna)
+taxa_names(ps) <- paste0("ASV", seq(ntaxa(ps)))
 
 # save and reload ps object
 saveRDS(ps, file="output/ps.rds")
 ps<- readRDS("output/ps.rds")
 
-#11,870 taxa in 191 samples
+#11,812 taxa in 191 samples
 ```
 
-```{r inspect data}
-## let's inspect
-df <- as.data.frame(sample_data(ps)) # Put sample_data into a ggplot-friendly data.frame
-df$LibrarySize <- sample_sums(ps) # this is the # of reads
-df <- df[order(df$LibrarySize),]
-df$Index <- seq(nrow(df))
+
+Colombia data still here, need to remove it, as well as any taxa that is uncharacterized
+```{r remove Colombia and uncharacterized taxa}
+# Show available ranks in the dataset
+rank_names(ps)
+
+table(tax_table(ps)[, "Phylum"], exclude = NULL)
+table(tax_table(ps)[, "Kingdom"], exclude = NULL)
+
+# remove NAs in taxonomic table
+ps <- subset_taxa(ps, !is.na(Phylum) & !Phylum %in% c("", "uncharacterized"))
+ps <- subset_taxa(ps, !is.na(Phylum) & !Phylum %in% c("", "Chloroplast"))
+
+#191 samples
+
+#######
+#remove Colombia samples
+ps<- subset_samples(ps, !(location %in% "colombia")) # removes colombia "real" samples
+
+# controls from Colombia to remove 
+remove.Col.cont<- c("colombia_pcr_NEG_2", "colombia_pcr_POS_16S", "colombia_pcr_NEG_1")
+
+ps.Yos<- subset_samples(ps, !(sample_year_extract_ID %in% remove.Col.cont)) 
+# 106 samples retained, 8544 reads
+
+#######
+# revise run.metaD to remove those samples too
+run.metaD<-run.metaD[(!run.metaD$location=="colombia"),]
+run.metaD<-run.metaD[!(run.metaD$sample_year_extract_ID=="colombia_pcr_NEG_2" |
+                       run.metaD$sample_year_extract_ID=="colombia_pcr_POS_16S" |
+                       run.metaD$sample_year_extract_ID=="colombia_pcr_NEG_1"),]
+Yos.metaD<-run.metaD
+
+# re-examine table, NAs gone, and all Colombia gone
+table(tax_table(ps.Yos)[, "Phylum"], exclude = NULL)
+sample_data(ps.Yos)
+######
+
+# now PS object has 106 samples, all Sierra + controls
+```
+
+Make a prevalance column so we can see how common these ASVs are
+```{r prevalence}
+# Compute prevalence of each feature, store as data.frame
+prevdf = apply(X = otu_table(ps.Yos),
+               MARGIN = ifelse(taxa_are_rows(ps), yes = 1, no = 2),
+               FUN = function(x){sum(x > 0)})
+
+# Add taxonomy and total read counts to this data.frame
+prevdf = data.frame(Prevalence = prevdf,
+                    TotalAbundance = taxa_sums(ps.Yos),
+                    tax_table(ps.Yos))
+
+plyr::ddply(prevdf, "Phylum", function(df1){cbind(mean(df1$Prevalence),sum(df1$Prevalence))})
+
+#########
+```
+
+
+ID contaminants using the negative controls. We need to find out which ASVs are contams and remove them. 
+```{r ID contaminants}
+## ID contaminants
+# first let's prune those not in at least 1 sample
+ps.Yos <- prune_taxa(taxa_sums(ps.Yos) > 1, ps.Yos)
+
+# remove samples with < 100 reads
+ps.Yos <- prune_samples(sample_sums(ps.Yos) > 100, ps.Yos)
+
+ps.Yos
+# now 6125 taxa remain, 100 samples (6 samples removed)
+
+sample_data(ps.Yos)$is.neg <- sample_data(ps.Yos)$sample_control == "neg.controls" 
+contamdf.prev <- isContaminant(ps.Yos, method="prevalence", neg="is.neg")
+
+table(contamdf.prev$contaminant) # which are contaminants? 5, 6120 not
+head(which(contamdf.prev$contaminant))
+```
+
+remove contaminants and then remove the negative controls all together
+```{r remove contaminants}
+
+### remove contaminants
+ps.noncontam <- prune_taxa(!contamdf.prev$contaminant, ps.Yos)
+ps.noncontam # 6120 remain in 100 samples
+
+rich<-estimate_richness(ps.noncontam, split = TRUE, measures = NULL)
+plot_richness(ps.noncontam, x="year", measures=c("Observed", "Shannon")) + theme_bw()
+
+########### let's inspect
+df.noncontam <- as.data.frame(sample_data(ps.noncontam))
+df.noncontam$LibrarySize <- sample_sums(ps.noncontam) # this is the # of reads
+df.noncontam <- df.noncontam[order(df.noncontam$LibrarySize),]
+df.noncontam$Index <- seq(nrow(df.noncontam))
+########### 
+
+# library size / number of reads
+df.noncontam$LibrarySize
+
+#remove neg controls
+ps.noncontam.negout<- subset_samples(ps.noncontam, !(sample_control %in% "neg.controls"))
+
+# 4777 taxa in 99 samples (+ controls still in here -- can use to assess accuracy in mock)
+
+```
+
+```{r final PS}
+#remove the positive controls
+ps.samples<- subset_samples(ps.noncontam.negout, !(sample_control %in% "pos.controls"))
+# 97 samples remain -- no controls, + or -, no Colombia
+
+PS.fin<-ps.samples
+
+########### let's inspect
+df.fin <- as.data.frame(sample_data(PS.fin))
+df.fin$LibrarySize <- sample_sums(PS.fin) # this is the # of reads
+df.fin$Index <- seq(nrow(df.fin))
+########### 
+
+```
+
+
+```{r rarify or not}
+rarecurve(otu_table(PS.fin), step=50, cex=0.5, label=FALSE)
+
+# remove samples with < 5000 reads
+PS.fin.prune <- prune_samples(sample_sums(PS.fin) > 5000, PS.fin) #89 samples
+rarecurve(otu_table(PS.fin.rar), step=50, cex=0.5, label=FALSE)
+
+############# rarefy without replacement, @ 5000, then 8 samples removed, 1753 ASVs
+ps.rare = rarefy_even_depth(PS.fin.prune, rngseed=1000, 
+                             sample.size=0.9*min(sample_sums(PS.fin.prune)), replace=F)
+
+sort(rowSums(otu_table(ps.rare))) # rarify at 5000 reads
+
+plot_richness(ps.rare, x="year", measures=c("Observed", "Shannon")) + theme_bw()
+
+```
+
+```{r}
+# inspect # of reads
+sort(rowSums(otu_table(PS.fin))) #reads
+rich<-estimate_richness(PS.fin, split = TRUE, measures = NULL)
+
+# plot it
+plot_richness(PS.fin, x="year", measures=c("Observed", "Shannon"))
 
 
 ########### plot the inspected figures
@@ -331,84 +488,6 @@ plot.inspect.reads.type<-ggplot(data=df, aes(x=Index, y=LibrarySize, color=locat
   Fig.formatting
 plot.inspect.reads.type
 
-# Show available ranks in the dataset
-rank_names(ps)
-
-table(tax_table(ps)[, "Phylum"], exclude = NULL)
-table(tax_table(ps)[, "Kingdom"], exclude = NULL)
-
-#remove NAs
-ps <- subset_taxa(ps, !is.na(Phylum) & !Phylum %in% c("", "uncharacterized"))
-ps <- subset_taxa(ps, !is.na(Phylum) & !Phylum %in% c("", "Chloroplast"))
-
-# re-examine table, NAs gone
-table(tax_table(ps)[, "Phylum"], exclude = NULL)
-
-
-# Compute prevalence of each feature, store as data.frame
-prevdf = apply(X = otu_table(ps),
-               MARGIN = ifelse(taxa_are_rows(ps), yes = 1, no = 2),
-               FUN = function(x){sum(x > 0)})
-
-# Add taxonomy and total read counts to this data.frame
-prevdf = data.frame(Prevalence = prevdf,
-                    TotalAbundance = taxa_sums(ps),
-                    tax_table(ps))
-
-plyr::ddply(prevdf, "Phylum", function(df1){cbind(mean(df1$Prevalence),sum(df1$Prevalence))})
-
-#########
-
-# inspect # of reads
-sort(rowSums(otu_table(ps))) #reads
-rich<-estimate_richness(ps, split = TRUE, measures = NULL)
-richness.test<-cbind(run.metaD, rich$Observed)
-
-# plot it
-plot_richness(ps, x="year", measures=c("Observed", "Shannon"))
-
-##### re-inspect reads here
- 
-################# 
-################# 
-################# Note!!! the controls are marked based on 'control vs. samples' but some are +controls
-################# Need at address this above so that + aren't penalizing us
 ```
 
-ID contaminants
-```{r ID contaminants}
-## ID contaminants
-ps <- prune_taxa(taxa_sums(ps) > 1, ps) # first let's prune those not in at least 1 sample
-ps <- prune_samples(sample_sums(ps) > 100, ps) # remove samples with < 100 reads
-ps
-# not 8536 taxa remain, 182 samples (9 samples removed)
-
-
-sample_data(ps)$is.neg <- sample_data(ps)$sample_control == "controls"
-contamdf.prev <- isContaminant(ps, method="prevalence", neg="is.neg")
-
-table(contamdf.prev$contaminant) # which are contaminants? 190, 5986 not
-head(which(contamdf.prev$contaminant))
-```
-
-remove contaminants
-```{r remove contaminants}
-### remove contaminants
-ps.noncontam <- prune_taxa(!contamdf.prev$contaminant, ps)
-ps.noncontam # 5986 remain
-
-rich<-estimate_richness(ps.noncontam, split = TRUE, measures = NULL)
-plot_richness(ps.noncontam, x="year", measures=c("Observed", "Shannon")) + theme_bw()
-rarecurve(otu_table(ps.noncontam), step=50, cex=0.5, label=FALSE)
-
-
-############# rarefy without replacement
-ps.rare = rarefy_even_depth(ps.noncontam, rngseed=1, 
-                             sample.size=0.9*min(sample_sums(ps.noncontam)), replace=F)
-
-sort(rowSums(otu_table(ps.rare))) # rarify at 13,568 reads
-
-plot_richness(ps.rare, x="sampleNames", measures=c("Observed", "Shannon")) + theme_bw()
-rarecurve(otu_table(ps.noncontam), step=50, cex=0.5, label=FALSE)
-```
 
