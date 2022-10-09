@@ -39,7 +39,7 @@ add in and edit metadata
 ```{r edit metadata}
 
 # edit metadata
-md<-read.csv("data/metadata/lake_eDNA.csv")
+md<-read.csv("data/metadata/lake_eDNA.rev.csv")
 md$year <- sapply(strsplit(md$sample_year_extract_ID, "_"), `[`, 1) # extract sample names to YEARS
 md$sample.ID <- sapply(strsplit(md$sample_year_extract_ID, "_"), `[`, 2) # extract sample names to YEARS
 
@@ -82,6 +82,9 @@ run.metaD<- md %>%
   dplyr::select(submission_sample_ID, sample_year_extract_ID, gene, sampleNames,
                 year, location, site, 
                 sample_type, sample_number, sample_control)
+
+make.fac<-c("year", "location", "site")
+run.metaD[make.fac] <- lapply(run.metaD[make.fac], factor) # make all these factors
 
 # export clean metadata
 write.csv(run.metaD, "data/metadata/run.metaD.csv")
@@ -287,7 +290,6 @@ Combine data into a phyloseq object.
 The package phyloseq organizes and synthesizes the different data types from a typical amplicon sequencing experiment into a single data object that can be easily manipulated
 ```{r load back in taxa table}
 taxa<- readRDS("output/taxaTable.rds")
-run.metaD<-read.csv("data/metadata/run.metaD.csv")
 
 ## sample data
 # metadata is run.metaD
@@ -431,6 +433,7 @@ df.fin$LibrarySize <- sample_sums(PS.fin) # this is the # of reads
 df.fin$Index <- seq(nrow(df.fin))
 ########### 
 
+saveRDS(PS.fin, file="output/PS.fin.rds")
 ```
 
 
@@ -446,8 +449,15 @@ ps.rare = rarefy_even_depth(PS.fin.prune, rngseed=1000,
                              sample.size=0.9*min(sample_sums(PS.fin.prune)), replace=F)
 
 sort(rowSums(otu_table(ps.rare))) # rarify at 5000 reads
+saveRDS(ps.rare, file="output/ps.rare.rds")
 
 plot_richness(ps.rare, x="year", measures=c("Observed", "Shannon")) + theme_bw()
+
+NMDSord <- ordinate(ps.rare, "NMDS", "bray")
+p1 = plot_ordination(ps.rare, NMDSord, type="samples", color="site", title="taxa")
+p1  + stat_ellipse(type = "norm", linetype = 1) +
+  theme_bw()
+print(p1)
 
 ```
 
