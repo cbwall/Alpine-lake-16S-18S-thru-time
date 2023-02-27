@@ -101,7 +101,7 @@ ps <- subset_taxa(ps, !is.na(Kingdom) & !Kingdom %in% c("", "Bacteria"))
 ps <- subset_taxa(ps, !is.na(Phylum) & !Phylum %in% c("", "uncharacterized"))
 ps <- subset_taxa(ps, !is.na(Phylum) & !Phylum %in% c("", "Chloroplast"))
 
-# just in case!
+# just in case! 
 ps<- subset_taxa(ps, Family!= "mitochondria" | is.na(Family) & Class!="Chloroplast" | is.na(Class)) 
 
 # check and see that the Bacteria are gone
