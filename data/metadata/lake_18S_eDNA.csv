@@ -1,0 +1,192 @@
+﻿submission_sample_ID,sample_number,sample_year_extract_ID,sample_type,site,gene
+CBW_192_18S,277,2021_25,sierra,Gardisky ,18S
+CBW_193_18S,278,2016_16,sierra,Boundary LK,18S
+CBW_194_18S,279,2017_23,sierra,Greenstone,18S
+CBW_195_18S,280,2016_20,sierra,Gaylor 2 upper,18S
+CBW_196_18S,281,2021_11,sierra,Greenstone,18S
+CBW_197_18S,282,2017_20,sierra,May,18S
+CBW_198_18S,283,2017_21,sierra,Gaylor lower,18S
+CBW_199_18S,284,2017_22,sierra,Blue,18S
+CBW_200_18S,285,2021_09,sierra,Eastern Brook Pond A,18S
+CBW_201_18S,286,2016_07,sierra,Spotted Fawn,18S
+CBW_202_18S,287,2017_17,sierra,Blue,18S
+CBW_203_18S,288,2017_19,sierra,Pollydome 1,18S
+CBW_204_18S,289,2016_10,sierra,May,18S
+CBW_205_18S,290,2016_22,sierra,Virginia,18S
+CBW_206_18S,291,2017_12,sierra,Virginia.sample 2,18S
+CBW_207_18S,292,2021_28,sierra,Spillway,18S
+CBW_208_18S,293,2017_04,sierra,Lukens,18S
+CBW_209_18S,294,2021_26,sierra,Steelhead,18S
+CBW_210_18S,295,2016_14,sierra,Pollydome 1,18S
+CBW_211_18S,296,2021_27,sierra,Serene,18S
+CBW_212_18S,297,2017_07,sierra,Elizabeth,18S
+CBW_213_18S,298,2016_13,sierra,Sunrise 3,18S
+CBW_214_18S,299,2016_06,sierra,Cathedral lower,18S
+CBW_215_18S,300,2021_17,sierra,Wasco,18S
+CBW_216_18S,301,2021_14,sierra,Pollydome 2,18S
+CBW_217_18S,302,2017_18,sierra,Gardisky,18S
+CBW_218_18S,303,2017_24b,sierra,Sunrise 1,18S
+CBW_219_18S,304,2021_20,sierra,Elizabeth,18S
+CBW_220_18S,305,2017_08,sierra,Steelhead,18S
+CBW_221_18S,306,sierra_PCR_NEG_5,pcr_neg,NA,18S
+CBW_222_18S,307,2017_13,sierra,Sunrise 1,18S
+CBW_223_18S,308,2021_29,blank,NA,18S
+CBW_224_18S,309,2017_01,sierra,Blue.sample 4,18S
+CBW_225_18S,310,2016_12,sierra,Cascade,18S
+CBW_226_18S,311,2021_07,sierra,Convict ,18S
+CBW_227_18S,312,2016_21,sierra,Sunrise 1,18S
+CBW_228_18S,313,2016_24,blank,NA,18S
+CBW_229_18S,314,2021_02,sierra,Sunrise 2,18S
+CBW_230_18S,315,2016_04,sierra,Gaylor 1,18S
+CBW_231_18S,316,2021_23,sierra,Easern Brook,18S
+CBW_232_18S,317,2016_03,sierra,Serene,18S
+CBW_233_18S,318,2021_19,sierra,Gaylor lower,18S
+CBW_234_18S,319,2016_09,sierra,Cathedral upper,18S
+CBW_235_18S,320,2021_04,sierra,Sunrise 1?,18S
+CBW_236_18S,321,2016_02,sierra,Steelhead,18S
+CBW_237_18S,322,2017_23b,sierra,Poly Dome 3,18S
+CBW_238_18S,323,2021_15,sierra,Granite 2,18S
+CBW_239_18S,324,2021_21,sierra,Pollydome 1,18S
+CBW_240_18S,325,2017_06,sierra,Lukens,18S
+CBW_241_18S,326,2017_09,sierra,Steelhead,18S
+CBW_242_18S,327,2021_08,sierra,Granite 1,18S
+CBW_243_18S,328,sierra_PCR_NEG_6,pcr_neg,NA,18S
+CBW_244_18S,329,2021_16,sierra,Helen,18S
+CBW_245_18S,330,2021_10,sierra,May,18S
+CBW_246_18S,331,2016_05,sierra,Sunrise 2,18S
+CBW_247_18S,332,2016_11,sierra,Gardisky,18S
+CBW_248_18S,333,2016_19,sierra,Lukens,18S
+CBW_249_18S,334,2021_13,sierra,Blue,18S
+CBW_250_18S,335,2016_01,sierra,Greenstone,18S
+CBW_251_18S,336,2021_18,sierra,Cathedral 1 lower,18S
+CBW_252_18S,337,2017_16,sierra,Helen,18S
+CBW_253_18S,338,2017_24,blank,NA,18S
+CBW_254_18S,339,sierra_PCR_POS_18S_1,pcr_pos,NA,18S
+CBW_255_18S,340,2017_15,sierra,Spillway,18S
+CBW_256_18S,341,2021_01,sierra,Upper Gaylor,18S
+CBW_257_18S,342,2017_05,sierra,Virginia,18S
+CBW_258_18S,343,2021_24,sierra,Cascade,18S
+CBW_259_18S,344,2017_14,sierra,Cathedral upper,18S
+CBW_260_18S,345,2016_18,sierra,Blue,18S
+CBW_261_18S,346,2021_05,sierra,Virginia,18S
+CBW_262_18S,347,2016_15,sierra,Spillway,18S
+CBW_263_18S,348,2017_10,sierra,Gaylor upper,18S
+CBW_264_18S,349,2016_23,sierra,Steelhead,18S
+CBW_265_18S,350,2021_03,sierra,Sunrise 3,18S
+CBW_266_18S,351,2016_08,sierra,Secret,18S
+CBW_267_18S,352,2021_12,sierra,Polydome 3,18S
+CBW_268_18S,353,2017_11,sierra,Sunrise 2,18S
+CBW_269_18S,354,2016_17,sierra,Elizabeth,18S
+CBW_270_18S,355,2021_06,sierra,Cathedral 2 upper,18S
+CBW_271_18S,356,2017_22b,sierra,Lower Cathedral,18S
+CBW_272_18S,357,2017_02,sierra,Serene,18S
+CBW_273_18S,358,2017_03,sierra,Blue.sample 2,18S
+CBW_274_18S,359,2019_06,sierra,Serene,18S
+CBW_275_18S,360,2019_17,sierra,Spillway ,18S
+CBW_276_18S,361,2019_03,sierra,Polydome 1,18S
+CBW_277_18S,362,2019_18,sierra,Lukens,18S
+CBW_278_18S,363,sierra_pcr_neg_7,pcr_neg,NA,18S
+CBW_279_18S,364,2019_05,sierra,Helen,18S
+CBW_280_18S,365,2019_19,sierra,Gardisky ,18S
+CBW_281_18S,366,2019_04,sierra,Upper Gaylor ,18S
+CBW_282_18S,367,2019_13,sierra,Eastern Brook  ,18S
+CBW_283_18S,368,2019_07,sierra,Virginia,18S
+CBW_284_18S,369,sierra_pcr_pos_18S_2,pcr_pos,NA,18S
+CBW_285_18S,370,2019_14,sierra,Upper Cathedral,18S
+CBW_286_18S,371,2019_20,sierra,Sunrise 3,18S
+CBW_287_18S,372,2019_16,sierra,Elizabeth,18S
+CBW_288_18S,373,2019_10,sierra,Sunrise 2,18S
+CBW_289_18S,374,2019_02,sierra,Polydome 3,18S
+CBW_290_18S,375,2019_09,sierra,Lower Cathedral,18S
+CBW_291_18S,376,sierra_pcr_neg_8,pcr_neg,NA,18S
+CBW_292_18S,377,2019_11,sierra,Granite ,18S
+CBW_293_18S,378,2019_15,sierra,Lower Gaylor,18S
+CBW_294_18S,379,2019_01,sierra,Polydome 2,18S
+CBW_295_18S,380,2019_21,sierra,Blue ,18S
+CBW_296_18S,381,2019_08,sierra,May,18S
+CBW_297_18S,382,2019_12,sierra,Sunrise 1,18S
+CBW_298_18S,86,col_22_a,colombia,La Mugre,18S
+CBW_299_18S,87,col_36_b,colombia,Conexion ,18S
+CBW_300_18S,88,col_40_a,colombia,Los Pozos,18S
+CBW_301_18S,89,col_20_a,colombia,Conexion ,18S
+CBW_302_18S,90,col_33_b,colombia,Hato Laguna ,18S
+CBW_303_18S,91,col_31_a,colombia,Centro L. Chico ,18S
+CBW_304_18S,92,col_25_a,colombia,Hato Laguna ,18S
+CBW_305_18S,93,col_5_a,colombia,La Custodia ,18S
+CBW_306_18S,94,col_19_a,colombia,Desaguadero,18S
+CBW_307_18S,95,col_21_a,colombia,La Custodia ,18S
+CBW_308_18S,96,col_24_b,colombia,Los Pozos,18S
+CBW_309_18S,97,col_23_a,colombia,Centro L. Chico ,18S
+CBW_310_18S,98,col_37_b,colombia,La Custodia ,18S
+CBW_311_18S,99,col_29_a,colombia,La Custodia ,18S
+CBW_312_18S,100,col_35_b,colombia,Desaguadero,18S
+CBW_313_18S,101,col_1_b,colombia,Hato Laguna ,18S
+CBW_314_18S,102,col_37_a,colombia,La Custodia ,18S
+CBW_315_18S,103,colombia_pcr_NEG_3,pcr_neg,NA,18S
+CBW_316_18S,104,col_40_b,colombia,Los Pozos,18S
+CBW_317_18S,105,col_35_a,colombia,Desaguadero,18S
+CBW_318_18S,106,col_26_b,colombia,Centro L. Chico ,18S
+CBW_319_18S,107,col_30_b,colombia,La Mugre,18S
+CBW_320_18S,108,col_24_a,colombia,Los Pozos,18S
+CBW_321_18S,109,col_9_b,colombia,Hato Laguna ,18S
+CBW_322_18S,110,col_23_b,colombia,Centro L. Chico ,18S
+CBW_323_18S,111,col_12_a,colombia,Conexion ,18S
+CBW_324_18S,112,col_36_a,colombia,Conexion ,18S
+CBW_325_18S,113,col_42_a,colombia,La Mugre,18S
+CBW_326_18S,114,col_39_a,colombia,Centro L. Chico ,18S
+CBW_327_18S,115,col_34_a,colombia,Centro L. Grande,18S
+CBW_328_18S,116,col_18_a,colombia,Centro L. Grande,18S
+CBW_329_18S,117,col_16_a,colombia,Los Pozos,18S
+CBW_330_18S,118,col_28_a,colombia,Conexion ,18S
+CBW_331_18S,119,col_33_a,colombia,Hato Laguna ,18S
+CBW_332_18S,120,col_17_a,colombia,Hato Laguna ,18S
+CBW_333_18S,121,col_30_a,colombia,La Mugre,18S
+CBW_334_18S,122,col_11_b,colombia,Desaguadero,18S
+CBW_335_18S,123,col_10_b,colombia,Centro L. Grande,18S
+CBW_336_18S,124,col_38_b,colombia,La Mugre,18S
+CBW_337_18S,125,col_11_a,colombia,Desaguadero,18S
+CBW_338_18S,126,col_12_b,colombia,Conexion ,18S
+CBW_339_18S,127,col_38_a,colombia,La Mugre,18S
+CBW_340_18S,128,col_20_b,colombia,Conexion ,18S
+CBW_341_18S,129,col_39_b,colombia,Centro L. Chico ,18S
+CBW_342_18S,130,col_5_b,colombia,La Custodia ,18S
+CBW_343_18S,131,col_15_a,colombia,Centro L. Chico ,18S
+CBW_344_18S,132,col_13_b,colombia,La Custodia ,18S
+CBW_345_18S,133,col_18_b,colombia,Centro L. Grande,18S
+CBW_346_18S,134,col_4_a,colombia,Conexion ,18S
+CBW_347_18S,135,col_26_a,colombia,Centro L. Grande,18S
+CBW_348_18S,136,col_9_a,colombia,Hato Laguna ,18S
+CBW_349_18S,137,col_13_a,colombia,La Custodia ,18S
+CBW_350_18S,138,col_27_a,colombia,Desaguadero,18S
+CBW_351_18S,139,col_14_a,colombia,La Mugre,18S
+CBW_352_18S,140,col_21_b,colombia,La Custodia ,18S
+CBW_353_18S,141,col_2_b,colombia,Centro L. Grande,18S
+CBW_354_18S,142,col_41_a,colombia,La Custodia ,18S
+CBW_355_18S,143,col_29_b,colombia,La Custodia ,18S
+CBW_356_18S,144,colombia_pcr_POS_16S,pcr_pos,NA ,18S
+CBW_357_18S,145,col_31_b,colombia,Centro L. Chico ,18S
+CBW_358_18S,146,col_28_b,colombia,Conexion ,18S
+CBW_359_18S,147,col_14_b,colombia,La Mugre,18S
+CBW_360_18S,148,col_22_b,colombia,La Mugre,18S
+CBW_361_18S,149,col_25_b,colombia,Hato Laguna ,18S
+CBW_362_18S,150,col_3_b,colombia,Desaguadero,18S
+CBW_363_18S,151,col_19_b,colombia,Desaguadero,18S
+CBW_364_18S,152,col_32_a,colombia,Los Pozos,18S
+CBW_365_18S,153,col_32_b,colombia,Los Pozos,18S
+CBW_366_18S,154,col_10_a,colombia,Centro L. Grande,18S
+CBW_367_18S,155,col_6_a,colombia,La Mugre,18S
+CBW_368_18S,156,col_7_a,colombia,Centro L. Chico ,18S
+CBW_369_18S,157,col_8_a,colombia,Los Pozos,18S
+CBW_370_18S,158,col_4_b,colombia,Conexion ,18S
+CBW_371_18S,159,col_6_b,colombia,La Mugre,18S
+CBW_372_18S,160,col_34_b,colombia,Centro L. Grande,18S
+CBW_373_18S,161,col_1_a,colombia,Hato Laguna ,18S
+CBW_374_18S,162,colombia_pcr_NEG_4,pcr_neg,NA,18S
+CBW_375_18S,163,col_3_a,colombia,Desaguadero,18S
+CBW_376_18S,164,col_2_a,colombia,Centro L. Grande,18S
+CBW_377_18S,165,col_27_b,colombia,Desaguadero,18S
+CBW_378_18S,166,col_15_b,colombia,Centro L. Chico ,18S
+CBW_379_18S,167,col_16_b,colombia,Los Pozos,18S
+CBW_380_18S,168,col_7_b,colombia,Centro L. Chico ,18S
+CBW_381_18S,169,col_8_b,colombia,Los Pozos,18S
+CBW_382_18S,170,col_17_b,colombia,Hato Laguna ,18S
